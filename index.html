@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Advanced Salary Dashboard</title>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #6dd5ed, #2193b0);
+    margin: 0;
+    color: #fff;
+  }
+  header {
+    text-align: center;
+    padding: 15px;
+    font-size: 26px;
+    font-weight: bold;
+    background: rgba(0,0,0,0.2);
+    backdrop-filter: blur(6px);
+  }
+  .container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 25px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  input, button {
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+  }
+  #salary {
+    width: 50%;
+    margin: 5px 0 20px 0;
+    font-size: 15px;
+  }
+  button {
+    background: #ff9800;
+    font-size: 14px;
+    color: white;
+    cursor: pointer;
+    transition: 0.3s;
+    margin: 5px;
+  }
+  button:hover {
+    background: #e68900;
+    transform: scale(1.05);
+  }
+  .category {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    gap: 10px;
+  }
+  .category input[type="text"] { flex: 2; font-size: 14px; }
+  .category input[type="number"] { width: 60px; font-size: 14px; }
+  .category input[type="range"] { flex: 4; }
+  .remove-btn {
+    background: #ff4d4d;
+    padding: 5px 10px;
+  }
+  .goal-section {
+    margin-top: 20px;
+    background: rgba(0,0,0,0.2);
+    padding: 15px;
+    border-radius: 10px;
+    text-align: left;
+    max-width: 480px;
+    margin: auto;
+  }
+  .progress-bar {
+    height: 15px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 5px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: lightgreen;
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+  }
+  .modal-content {
+    background: rgba(255,255,255,0.95);
+    color: #222;
+    margin: 40px auto;
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 700px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+  }
+  .close-btn {
+    background: transparent;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    float: right;
+    color: #333;
+  }
+  .breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 20px;
+    justify-content: center;
+  }
+  /* Improved breakdown card styling for refined look */
+  .breakdown-card {
+    flex: 1 1 calc(50% - 20px);
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    padding: 18px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    color: #222;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .breakdown-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+  }
+  .breakdown-card h4 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #444;
+  }
+  .amount {
+    font-size: 22px;
+    font-weight: bold;
+    color: #222;
+    margin-bottom: 6px;
+  }
+  .percent {
+    font-size: 14px;
+    color: #666;
+  }
+  .modal-footer {
+    margin-top: 25px;
+    font-size: 16px;
+    text-align: center;
+    color: #333;
+  }
+  .chart-container {
+    max-width: 320px;
+    margin: 20px auto 0;
+  }
+  /* Tablet responsiveness */
+  @media(max-width: 768px){
+    #salary { width: 70%; }
+    .breakdown-card { flex: 1 1 100%; }
+    .chart-container { max-width: 260px; }
+  }
+  /* Mobile responsiveness */
+  @media(max-width: 500px){
+    #salary, .container button, .goal-section input { width: 100%; font-size: 14px; }
+    .category { flex-wrap: wrap; gap: 5px; }
+    .category input[type="text"] { flex: 1 1 100%; }
+    .breakdown-card { flex: 1 1 100%; padding: 12px; }
+    .modal-content { padding: 15px; width: 95%; }
+    .chart-container { max-width: 200px; }
+  }
+  /* Larger desktop tweaks */
+  @media(min-width: 1024px){
+    .container { padding: 35px; }
+    #salary { width: 40%; }
+    .breakdown-card { flex: 1 1 calc(33% - 15px); }
+    .chart-container { max-width: 350px; }
+    .modal-content { max-width: 800px; }
+  }
+</style>
+</head>
+<body>
+
+<header>💰 Advanced Salary Dashboard</header>
+
+<div class="container">
+  <label><b>Enter Monthly Salary (₹):</b></label><br/>
+  <input type="number" id="salary" placeholder="e.g. 70000" autocomplete="off" />
+
+  <div id="categories"></div>
+  <button onclick="addCategory()">+ Add Category</button>
+  <button onclick="calculate()">Calculate</button>
+  <button onclick="downloadReport()">Download Report</button>
+
+  <div class="goal-section">
+    <label><b>Savings Goal (per month ₹):</b></label><br/>
+    <input type="number" id="goal" placeholder="e.g. 15000" autocomplete="off" />
+    <div class="progress-bar"><div id="progress-fill" class="progress-fill"></div></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="breakdownModal" class="modal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal()">&times;</button>
+    <h2>Salary Breakdown</h2>
+    <div id="modalDesc" class="breakdown"></div>
+    <div class="chart-container"><canvas id="modalChart"></canvas></div>
+    <div id="modalFooter" class="modal-footer"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+let chartInstance = null;
+let categories = [
+  { name: "💳 EMI", percent: 40 },
+  { name: "🛒 Grocery", percent: 30 },
+  { name: "💊 Medical + Savings", percent: 20 },
+  { name: "🎉 Outing & Fun", percent: 10 }
+];
+
+function renderCategories(){
+  const container = document.getElementById("categories");
+  container.innerHTML = "";
+  categories.forEach((cat, i) => {
+    container.innerHTML += `
+      <div class="category">
+        <input type="text" value="${cat.name}" onchange="updateCategoryName(${i},this.value)">
+        <input type="range" min="0" max="100" value="${cat.percent}" oninput="updateCategoryPercent(${i},this.value)">
+        <input type="number" min="0" max="100" value="${cat.percent}" onchange="updateCategoryPercent(${i},this.value)">%
+        <button class="remove-btn" onclick="removeCategory(${i})">X</button>
+      </div>
+    `;
+  });
+}
+function addCategory(){ categories.push({ name:"New", percent:0 }); renderCategories(); }
+function removeCategory(i){ categories.splice(i,1); renderCategories(); }
+function updateCategoryName(i, val){ categories[i].name = val; }
+function updateCategoryPercent(i, val){
+  categories[i].percent = Math.min(100, Math.max(0, parseInt(val)||0));
+  renderCategories();
+}
+
+function openModal(){ document.getElementById("breakdownModal").style.display = "block"; }
+function closeModal(){ document.getElementById("breakdownModal").style.display = "none"; }
+
+function calculate(){
+  const salary = parseFloat(document.getElementById("salary").value);
+  const goal = parseFloat(document.getElementById("goal").value) || 0;
+  let totalPercent = categories.reduce((sum,c) => sum + c.percent, 0);
+  if(!salary || salary <= 0) return alert("Enter valid salary.");
+  if(totalPercent !== 100) return alert("Percentages must total 100% (now: "+totalPercent+"%)");
+
+  const breakdownContainer = document.getElementById("modalDesc"), footer = document.getElementById("modalFooter");
+  breakdownContainer.innerHTML = ""; let labels=[],data=[],colors=[];
+  categories.forEach(cat=>{
+    let amount = (salary*cat.percent)/100;
+    labels.push(cat.name); data.push(amount);
+    let clr = `hsl(${Math.floor(Math.random()*360)}, 75%, 70%)`;
+    colors.push(clr);
+    breakdownContainer.innerHTML += `
+      <div class="breakdown-card" style="border-top: 4px solid ${clr}">
+        <h4>${cat.name}</h4>
+        <div class="amount">₹${amount.toFixed(2)}</div>
+        <div class="percent">(${cat.percent}%)</div>
+      </div>`;
+  });
+
+  let savingsCat = categories.find(c=>c.name.toLowerCase().includes("saving"));
+  let actualSavings = savingsCat ? (salary*savingsCat.percent)/100 : 0;
+  let progress = goal>0 ? Math.min(100,(actualSavings/goal)*100) : 0;
+  document.getElementById("progress-fill").style.width = progress + "%";
+  footer.innerHTML = goal>0
+    ? `Total Salary: ₹${salary.toFixed(2)} | Goal: ₹${goal} — ${progress.toFixed(1)}% reached`
+    : `Total Salary: ₹${salary.toFixed(2)}`;
+
+  if(chartInstance) chartInstance.destroy();
+  chartInstance = new Chart(document.getElementById("modalChart"),{
+    type:"doughnut",
+    data:{ labels, datasets:[{ data, backgroundColor: colors }] },
+    options:{ responsive:true, maintainAspectRatio:true, plugins:{ legend:{ position:"bottom" } } }
+  });
+  openModal();
+}
+
+async function downloadReport(){
+  const { jsPDF } = window.jspdf;
+  if(!chartInstance) return alert("Please calculate first.");
+
+  const salary = parseFloat(document.getElementById("salary").value);
+  if(!salary || salary <= 0) return alert("Enter a valid salary.");
+
+  const doc = new jsPDF();
+  doc.setFontSize(18);
+  doc.text("Salary Breakdown Report", 14, 20);
+  doc.setFontSize(12);
+  doc.text(`Monthly Salary: ₹${salary.toFixed(2)}`, 14, 30);
+
+  let startY = 40;
+  doc.setFontSize(14);
+  doc.text("Categories Breakdown:", 14, startY);
+  startY += 8;
+  doc.setFontSize(12);
+  doc.text("Category", 14, startY);
+  doc.text("Percentage", 80, startY, null, null, "right");
+  doc.text("Amount (₹)", 130, startY, null, null, "right");
+  startY += 6;
+  doc.line(14, startY, 190, startY);
+  startY += 6;
+
+  categories.forEach(cat => {
+    const amount = (salary * cat.percent) / 100;
+    doc.text(cat.name.replace(/[^a-zA-Z0-9\s]/g, ""), 14, startY);
+    doc.text(cat.percent.toFixed(0) + "%", 80, startY, null, null, "right");
+    doc.text(amount.toFixed(2), 130, startY, null, null, "right");
+    startY += 8;
+  });
+
+  const goal = parseFloat(document.getElementById("goal").value) || 0;
+  if(goal > 0){
+    const savingsCat = categories.find(c => c.name.toLowerCase().includes("saving"));
+    const actualSavings = savingsCat ? (salary * savingsCat.percent) / 100 : 0;
+    const progress = Math.min(100, (actualSavings / goal) * 100);
+
+    startY += 10;
+    doc.setFontSize(14);
+    doc.text("Savings Goal:", 14, startY);
+    startY += 6;
+    doc.setFontSize(12);
+    doc.text(`Goal per month: ₹${goal.toFixed(2)}`, 14, startY);
+    doc.text(`Progress: ${progress.toFixed(1)}%`, 14, startY + 8);
+    startY += 16;
+  }
+
+  const canvas = document.getElementById("modalChart");
+  const canvasImage = canvas.toDataURL("image/png", 1.0);
+  doc.addImage(canvasImage, "PNG", 50, startY + 10, 110, 80);
+
+  doc.save(`Salary_Breakdown_Report_${new Date().toISOString().slice(0,10)}.pdf`);
+}
+
+renderCategories();
+document.querySelector(".container").addEventListener("keypress", e=>{ if(e.key==="Enter"){ e.preventDefault(); calculate(); }});
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeModal(); });
+</script>
+</body>
+</html>
